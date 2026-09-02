@@ -137,23 +137,40 @@ class DefaultCandidateProcessor(CandidateProcessor):
         matches: list[CandidateMatch] = []
 
         for result in search_results:
-            # Determine candidate image source
-            image_source = (
-                result.thumbnail_url
-                or (result.raw_metadata.get("file_path") if isinstance(result.raw_metadata, dict) else None)
-                or (result.raw_metadata.get("image") if isinstance(result.raw_metadata, dict) else None)
-                or result.url
-            )
+            # Candidate image retrieval with fallback hierarchy:
+            # 1. Local file path if present (mock/local tests)
+            # 2. High-res image URL from raw_metadata ("image")
+            # 3. Provider thumbnail URL (Google Lens CDN cache)
+            # 4. Result URL (if direct image)
+            candidate_sources: list[str] = []
+            if isinstance(result.raw_metadata, dict) and result.raw_metadata.get("file_path"):
+                candidate_sources.append(str(result.raw_metadata["file_path"]))
+            if isinstance(result.raw_metadata, dict) and result.raw_metadata.get("image"):
+                candidate_sources.append(str(result.raw_metadata["image"]))
+            if result.thumbnail_url:
+                candidate_sources.append(result.thumbnail_url)
+            if result.url and any(result.url.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
+                candidate_sources.append(result.url)
 
-            # Retrieve image bytes safely
-            image_bytes = self._fetch_image_bytes(str(image_source)) if image_source else None
+            image_bytes = None
+            resolved_source = ""
+            for src in candidate_sources:
+                if not src:
+                    continue
+                image_bytes = self._fetch_image_bytes(src)
+                if image_bytes:
+                    resolved_source = src
+                    break
+
+            if not resolved_source and candidate_sources:
+                resolved_source = candidate_sources[0]
 
             # Handle missing or invalid candidate image
             if not image_bytes:
                 logger.warning("Candidate image missing or invalid for result: %s", result.url)
                 cand = Candidate.create(
                     url=result.url,
-                    image_url=str(image_source or ""),
+                    image_url=resolved_source or result.url,
                     image_bytes=b"",
                     title=result.title,
                     platform=result.platform,
@@ -174,7 +191,7 @@ class DefaultCandidateProcessor(CandidateProcessor):
             # Valid candidate entity with SHA-256 hash
             candidate = Candidate.create(
                 url=result.url,
-                image_url=str(image_source),
+                image_url=resolved_source or str(result.thumbnail_url or result.url),
                 image_bytes=image_bytes,
                 title=result.title,
                 platform=result.platform,

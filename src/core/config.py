@@ -30,7 +30,8 @@ class Settings(BaseSettings):
     SERPAPI_API_KEY: str | None = None
     BING_SEARCH_API_KEY: str | None = None
     BING_SEARCH_ENDPOINT: str = "https://api.bing.microsoft.com/v7.0/images/visualsearch"
-    MAX_SEARCH_RESULTS: int = Field(default=10, ge=1, le=50)
+    MAX_CANDIDATES: int = Field(default=20, ge=1, le=50)
+    MAX_SEARCH_RESULTS: int = Field(default=20, ge=1, le=50)
     SEARCH_REQUEST_TIMEOUT_SECONDS: int = Field(default=15, ge=1, le=60)
 
     # Blockchain (Sepolia)

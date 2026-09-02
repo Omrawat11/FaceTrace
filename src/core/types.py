@@ -11,6 +11,7 @@ class PlatformType(str, Enum):
     REDDIT = "reddit"
     LINKEDIN = "linkedin"
     TIKTOK = "tiktok"
+    FACEBOOK = "facebook"
     YOUTUBE = "youtube"
     PINTEREST = "pinterest"
     WIKIPEDIA = "wikipedia"
@@ -24,6 +25,8 @@ class PlatformType(str, Enum):
         lower_url = url.lower()
         if "instagram.com" in lower_url:
             return cls.INSTAGRAM
+        if "facebook.com" in lower_url or "fb.com" in lower_url:
+            return cls.FACEBOOK
         if "twitter.com" in lower_url or "x.com" in lower_url:
             return cls.TWITTER
         if "reddit.com" in lower_url:

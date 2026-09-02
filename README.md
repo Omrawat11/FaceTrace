@@ -259,7 +259,7 @@ To ensure identical evidence bundles produce bitwise-identical SHA-256 digests a
 # Run the 24-point Phase 3 test suite
 python -m pytest tests/test_phase3_blockchain.py -v
 
-# Run the complete test suite (74 tests)
+# Run the complete test suite (83 tests)
 python -m pytest -v
 
 # Run the end-to-end local blockchain demonstration
@@ -268,7 +268,86 @@ python scripts/demo_phase3.py
 
 ---
 
-## 7. Security, Privacy & Ethics
+## 8. Phase 5: Real Automatic Web Search Integration
+
+FaceTrace integrates the **SerpApi Google Lens** engine for genuine, real-time public reverse-image search across indexed web and social platforms.
+
+```
+USER UPLOADS CONSENTED IMAGE
+        ↓
+FACE VALIDATION (InsightFace SCRFD + ArcFace)
+        ↓
+REAL REVERSE IMAGE SEARCH (SerpApi Google Lens)
+        ↓
+PUBLICLY INDEXED IMAGE / WEB RESULTS
+        ↓
+CANDIDATE EXTRACTION & DEDUPLICATION
+        ↓
+LOCAL FACE MATCHING (Cosine Similarity)
+        ↓
+MATCH RANKING & BEST MATCH IDENTIFICATION
+        ↓
+EVIDENCE RECORD GENERATION (SHA-256)
+        ↓
+BLOCKCHAIN ANCHORING (EvidenceRegistry.sol)
+        ↓
+ON-CHAIN INTEGRITY VERIFICATION
+```
+
+### Search Modes
+
+#### 🧪 Demo Mode (`SEARCH_PROVIDER=mock`)
+* Uses offline local candidate metadata and sample imagery.
+* Ideal for development, testing without API keys, and offline demonstrations.
+* Clearly labeled as **`LOCAL DEMO`** in the application interface.
+
+#### 🌐 Live Mode (`SEARCH_PROVIDER=serpapi`)
+* Executes live Google Lens visual search via SerpApi on public indexed pages.
+* Downloads discovered candidate imagery, calculates image SHA-256 digests, extracts candidate faces locally, and scores cosine similarity against the query portrait.
+* Clearly labeled as **`LIVE WEB SEARCH`** in the application interface.
+
+### End-to-End Workflow & Setup
+
+1. **Obtain SerpApi API Key**: Create an account at [serpapi.com](https://serpapi.com/) to obtain your API key.
+2. **Configure Environment**: Add your key to `.env` (never commit `.env`):
+   ```bash
+   SERPAPI_API_KEY=your_key_here
+   SEARCH_PROVIDER=serpapi
+   MAX_CANDIDATES=20
+   ```
+3. **Start Local Blockchain** (if anchoring evidence):
+   ```bash
+   python scripts/deploy_contract.py
+   ```
+4. **Launch Streamlit Dashboard**:
+   ```bash
+   streamlit run app/app.py
+   ```
+5. **Upload Consented Image**: Upload a clear portrait photo.
+6. **Search & Evaluate**: Click **Run Search & Matching**.
+7. **Review Discovered Candidates**: Inspect public discovery URLs, platform badges, thumbnails, and similarity scores.
+8. **Select Verified Match**: Review the highest-confidence biometric match exceeding the threshold.
+9. **Anchor Evidence**: Explicitly click **Anchor Verified Evidence to Blockchain** to submit the transaction.
+10. **Verify Integrity**: Review on-chain transaction receipt, block timestamp, and cryptographic `VERIFIED` status.
+11. **Test Tamper Detection**: Click **Simulate Tampered Evidence Check** to observe how altered evidence is immediately detected and flagged as `TAMPER DETECTED`.
+
+---
+
+## 9. Limitations & Ethical Boundary Disclosures
+
+FaceTrace is committed to total transparency regarding its capabilities and boundaries:
+
+1. **Search Scope & Provider Dependence**: Search results depend entirely on the external search engine (SerpApi / Google Lens). Only publicly accessible and indexed web content can be discovered.
+2. **No Access to Private Content**: FaceTrace does **not** and cannot access private social media accounts, walled gardens, direct messages, or non-indexed personal profiles. It is a discovery engine for public web pages, not unrestricted access to private data.
+3. **Search Engine Coverage Gaps**: Public search engines may miss newly uploaded content, unindexed forum threads, or pages protected behind aggressive bot blockers.
+4. **Probabilistic Biometric Matching**: Facial feature extraction and cosine similarity scoring are probabilistic machine learning algorithms. A similarity score represents mathematical vector proximity, **not absolute proof of real-world identity**.
+5. **False Positives & False Negatives**: Visual angles, lighting, occlusion, makeup, aging, and image resolution can influence facial recognition accuracy, potentially leading to false positives or false negatives.
+6. **Blockchain Scope Guarantee**: Blockchain anchoring proves the mathematical **existence and bitwise integrity** of the recorded evidence bundle at a specific block timestamp. It proves the record has not been modified since anchoring; it does not constitute a legal adjudication of the real-world claim.
+7. **Privacy Safeguards**: Raw facial scans, 512D ArcFace embeddings, and personal identifiers are **never** stored on the public blockchain or shared with search providers.
+
+---
+
+## 10. Security, Privacy & Ethics
 
 1. **Consent First**: Only consented demo images or public figures are used for demonstration.
 2. **Zero Biometrics on Chain**: Raw biometrics never touch public ledgers.
@@ -277,6 +356,6 @@ python scripts/demo_phase3.py
 
 ---
 
-## 8. License
+## 11. License
 
 MIT License. Built for HH Goa 2026 Shortlisting Task 3.

@@ -81,5 +81,6 @@ private_key*
 data/cache/
 data/temp/
 data/downloaded/
+data/candidates/
 *.onnx
 models/downloaded/
