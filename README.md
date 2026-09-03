@@ -347,7 +347,44 @@ FaceTrace is committed to total transparency regarding its capabilities and boun
 
 ---
 
-## 10. Security, Privacy & Ethics
+## 10. Phase 6: End-to-End Hardening & Production Readiness
+
+FaceTrace has undergone end-to-end failure matrix testing and hardening to guarantee stability during hackathon demonstrations:
+
+### Comprehensive Failure & Resilience Matrices
+- **Face Input Matrix**: Valid single face accepted; zero faces rejected (`NoFaceDetectedError`); multiple faces rejected (`MultipleFacesDetectedError`); images under 32×32px rejected (`InvalidImageError`); corrupt or unsupported byte payloads safely rejected.
+- **Search Failure Matrix**: Handles missing keys, 401 unauthorized, 429 quota exhaustion, 500 server errors, timeouts, DNS connection failures, malformed JSON, and empty result sets without crashing.
+- **Candidate Processing Matrix**: Handles HTTP 404s, connection drops, candidates with no faces, candidates with multiple faces (evaluates all and selects highest similarity), corrupt candidate downloads, and malformed candidate URLs without interruption.
+- **Matching Threshold Calibration**:
+  - **Biometric Model**: InsightFace SCRFD detector + ArcFace 512-dimensional normalized embedding vectors.
+  - **Metric**: Cosine similarity $S_C(\vec{u}, \vec{v}) = \frac{\vec{u} \cdot \vec{v}}{\|\vec{u}\| \|\vec{v}\|}$.
+  - **Calibrated Threshold**: Empirical threshold $0.45$ (scores $\ge 0.45$ are classified as `MATCH`; scores $< 0.45$ are classified as `NO_MATCH`).
+  - **Probabilistic Reality**: Biometric similarity is a mathematical measurement of facial vector proximity, not absolute biological identity proof.
+- **Result Deduplication Rules**:
+  - *Identical URL*: If the exact same canonical post URL appears multiple times, it is deduplicated to a single candidate.
+  - *Same Image, Different URLs*: If distinct URLs host the same image (e.g. cross-platform reposts), both are preserved as legitimate independent discovery sources.
+- **Evidence Integrity & Tampering**:
+  - Modifying any evidence field (e.g. `similarity_score` 0.82 → 0.83 or `title`) alters the canonical RFC 8785 JSON representation, producing an entirely different SHA-256 fingerprint.
+  - On-chain comparison against the anchored fingerprint immediately flags the record as `✗ TAMPERED`.
+- **Privacy & Anti-Leakage Verification**:
+  - `EvidenceRecord` contains zero face embeddings, zero biometric vectors, and zero raw pixels.
+  - Smart contracts store exclusively 32-byte SHA-256 fingerprints and public discovery URLs.
+  - All credentials (`SERPAPI_API_KEY`, `ETH_PRIVATE_KEY`, `BING_SEARCH_API_KEY`) are automatically sanitized and redacted.
+
+### Verification & Audit Script
+Run the automated end-to-end audit demonstration:
+```bash
+python scripts/audit_phase6.py
+```
+
+Run the complete test suite:
+```bash
+python -m pytest -v
+```
+
+---
+
+## 11. Security, Privacy & Ethics
 
 1. **Consent First**: Only consented demo images or public figures are used for demonstration.
 2. **Zero Biometrics on Chain**: Raw biometrics never touch public ledgers.
@@ -356,6 +393,6 @@ FaceTrace is committed to total transparency regarding its capabilities and boun
 
 ---
 
-## 11. License
+## 12. License
 
 MIT License. Built for HH Goa 2026 Shortlisting Task 3.

@@ -574,6 +574,15 @@ with col_upload:
 
     if uploaded_file is not None:
         image_bytes = uploaded_file.read()
+        # Reset stale outputs if a new or different image is uploaded
+        if (
+            st.session_state.get("uploaded_filename") != uploaded_file.name
+            or st.session_state.get("uploaded_image_bytes") != image_bytes
+        ):
+            st.session_state["pipeline_output"] = None
+            st.session_state["tamper_test_result"] = None
+            st.session_state["app_stage"] = "UPLOADED"
+
         st.session_state["uploaded_image_bytes"] = image_bytes
         st.session_state["uploaded_filename"] = uploaded_file.name
         if st.session_state["app_stage"] == "IDLE":
@@ -998,16 +1007,31 @@ if output is not None:
                     evidence_version=output.evidence_record.evidence_version,
                 )
                 pipeline = DefaultFaceTracePipeline()
-                tamper_vr = verify_evidence(tampered_er, pipeline._blockchain)
-                st.session_state["tamper_test_result"] = tamper_vr
+                orig_fp = output.evidence_record.to_bytes32() if output.evidence_record else None
+                tamper_vr = verify_evidence(tampered_er, pipeline._blockchain, expected_fingerprint=orig_fp)
+                st.session_state["tamper_test_result"] = {
+                    "vr": tamper_vr,
+                    "original_fp": orig_fp,
+                    "modified_fp": tampered_er.to_bytes32(),
+                }
 
         if st.session_state.get("tamper_test_result"):
-            t_vr = st.session_state["tamper_test_result"]
+            t_data = st.session_state["tamper_test_result"]
+            orig_fp = t_data["original_fp"]
+            mod_fp = t_data["modified_fp"]
             st.markdown(
                 '<div class="verification-banner tampered">🚨 TAMPER DETECTED — The modified evidence produces a different hash that does not match the on-chain record!</div>',
                 unsafe_allow_html=True,
             )
-            st.info(f"**Tamper explanation:** Original on-chain hash is anchored permanently. The altered payload produced `{t_vr.computed_fingerprint}`, which is not registered on the smart contract.")
+            st.markdown(f"""
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-top: 8px; font-family: monospace; font-size: 0.8rem;">
+                <div><strong style="color: #94A3B8;">Original Evidence Hash:</strong> <span style="color: #38BDF8;">{orig_fp}</span></div>
+                <div><strong style="color: #94A3B8;">Modified Evidence Hash:</strong> <span style="color: #F87171;">{mod_fp}</span></div>
+                <div><strong style="color: #94A3B8;">On-Chain Blockchain Hash:</strong> <span style="color: #38BDF8;">{orig_fp}</span></div>
+                <div style="color: #EF4444; font-weight: bold; margin-top: 6px;">Result: ✗ TAMPERED (Cryptographic integrity check failed)</div>
+            </div>
+            """, unsafe_allow_html=True)
+            st.info(f"**Tamper explanation:** The anchored evidence is immutable on the blockchain. Modifying any field changed the SHA-256 fingerprint from `{orig_fp}` to `{mod_fp}`, which does not match the registered on-chain provenance record.")
 
     # ── Section 5: No Match Found Completed State ──
     if (output.stage == PipelineStage.COMPLETED

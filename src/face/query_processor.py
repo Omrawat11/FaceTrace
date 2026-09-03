@@ -63,7 +63,14 @@ class QueryFaceProcessor:
 
         try:
             with Image.open(io.BytesIO(raw_bytes)) as img:
+                width, height = img.size
                 img.verify()
+                if width < 32 or height < 32:
+                    raise InvalidImageError(
+                        f"Image dimensions ({width}x{height}) are too small. Query face image must be at least 32x32 pixels."
+                    )
+        except InvalidImageError:
+            raise
         except Exception as exc:
             raise InvalidImageError(f"Failed to decode query image: {exc}") from exc
 

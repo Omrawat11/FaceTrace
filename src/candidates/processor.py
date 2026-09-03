@@ -101,7 +101,7 @@ class DefaultCandidateProcessor(CandidateProcessor):
                     "HTTP fetch failed for %s (Status: %s)", image_url, resp.status_code
                 )
                 return None
-            except requests.RequestException as exc:
+            except Exception as exc:
                 logger.warning("Error fetching candidate image %s: %s", image_url, exc)
                 return None
 
@@ -126,6 +126,9 @@ class DefaultCandidateProcessor(CandidateProcessor):
     ) -> list[CandidateMatch]:
         """Download candidate images, detect faces, compute similarities, and return ranked matches.
 
+        Applies canonical URL deduplication: if the identical post URL is returned multiple
+        times, it is evaluated once. Legitimate separate sources sharing an image are preserved.
+
         Args:
             search_results: Candidate search results from SearchProvider.
             query_embedding: 512D biometric vector of the validated query face.
@@ -135,8 +138,16 @@ class DefaultCandidateProcessor(CandidateProcessor):
             List of CandidateMatch instances sorted descending by similarity_score.
         """
         matches: list[CandidateMatch] = []
+        seen_candidate_urls: set[str] = set()
 
         for result in search_results:
+            # Deduplicate results by post URL
+            clean_url = (result.url or "").strip().lower()
+            if clean_url and clean_url in seen_candidate_urls:
+                logger.debug("Skipping duplicate search candidate with identical URL: %s", result.url)
+                continue
+            if clean_url:
+                seen_candidate_urls.add(clean_url)
             # Candidate image retrieval with fallback hierarchy:
             # 1. Local file path if present (mock/local tests)
             # 2. High-res image URL from raw_metadata ("image")
