@@ -60,7 +60,19 @@ st.markdown("""
 
 /* Global font */
 html, body, [class*="st-"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Ensure Material Symbols / Streamlit icons are never overridden by Inter */
+[data-testid="stIconMaterial"],
+[data-testid*="stIcon"],
+[data-testid="stIconMaterial"] *,
+.material-symbols-rounded,
+[class*="material-symbols"],
+[class*="e1vmumty"] {
+    font-family: 'Material Symbols Rounded' !important;
+    font-feature-settings: 'liga' 1 !important;
+    display: inline-block;
 }
 
 /* Main background */
@@ -340,15 +352,123 @@ html, body, [class*="st-"] {
     margin-top: 4px;
 }
 
-/* Hide Streamlit default menu and footer */
-#MainMenu { visibility: hidden; }
-footer { visibility: hidden; }
-header { visibility: hidden; }
+/* ─────────────────────────────────────────────────────────── */
+/* Streamlit File Uploader Dark Styling                        */
+/* ─────────────────────────────────────────────────────────── */
+[data-testid="stFileUploadDropzone"] {
+    background: #1E293B !important;
+    border: 1px dashed var(--border-subtle) !important;
+    border-radius: 8px !important;
+    color: var(--text-secondary) !important;
+}
 
-/* Sidebar styling */
+[data-testid="stFileUploadDropzone"] button {
+    background: #263549 !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+    border-radius: 6px !important;
+}
+
+[data-testid="stFileUploadDropzone"] button:hover {
+    background: #334155 !important;
+    color: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* Streamlit Header & Toolbar Visibility Controls              */
+/* ─────────────────────────────────────────────────────────── */
+[data-testid="stHeader"] {
+    visibility: visible !important;
+    background: transparent !important;
+    z-index: 99 !important;
+}
+
+[data-testid="stToolbar"] {
+    background: transparent !important;
+    visibility: visible !important;
+    display: flex !important;
+}
+
+/* Hide unwanted default Streamlit chrome */
+#MainMenu,
+[data-testid="stMainMenu"],
+[data-testid="stAppDeployButton"],
+[data-testid="stStatusWidget"],
+[data-testid="stToolbarActions"],
+[data-testid="stActionMenu"],
+footer {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* Sidebar Toggle & Panel Controls                             */
+/* ─────────────────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
     background: #0B1120 !important;
     border-right: 1px solid var(--border-subtle);
+}
+
+[data-testid="stSidebarHeader"] {
+    padding-top: 0.5rem;
+    padding-right: 0.5rem;
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+/* Sidebar collapse (close) button */
+[data-testid="stSidebarCollapseButton"] {
+    visibility: visible !important;
+    display: inline-flex !important;
+    opacity: 1 !important;
+}
+
+[data-testid="stSidebarCollapseButton"] button {
+    visibility: visible !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--text-secondary) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-testid="stSidebarCollapseButton"] button:hover {
+    background: var(--bg-card-hover) !important;
+    color: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+/* Sidebar expand (open) button */
+[data-testid="stExpandSidebarButton"],
+[data-testid="stSidebarCollapsedControl"] {
+    visibility: visible !important;
+    display: inline-flex !important;
+    z-index: 1000 !important;
+}
+
+[data-testid="stExpandSidebarButton"] button {
+    visibility: visible !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--text-primary) !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-testid="stExpandSidebarButton"] button:hover {
+    background: var(--bg-card-hover) !important;
+    color: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
 }
 </style>
 """, unsafe_allow_html=True)
