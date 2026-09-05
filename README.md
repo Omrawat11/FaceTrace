@@ -61,7 +61,20 @@ Reverse face search tools exist. Blockchain provenance tools exist. What's missi
 
 ---
 
-## 🏗️ Architecture at a Glance
+## 🏗️ Architecture at a Glance — Isometric Workflow
+
+<div align="center">
+
+<img src="./docs/pipeline-3d.svg" alt="FaceTrace isometric pipeline diagram" width="100%"/>
+
+</div>
+
+<sub>🔵 Biometric AI &nbsp;·&nbsp; 🟠 Search & Match &nbsp;·&nbsp; 🟣 Evidence Layer &nbsp;·&nbsp; 🟢 Blockchain</sub>
+
+<br/>
+
+<details>
+<summary><b>📈 Prefer a flowchart view? Click to expand</b></summary>
 
 ```mermaid
 flowchart TD
@@ -84,6 +97,8 @@ flowchart TD
     style M fill:#27AE60,color:#fff
     style X fill:#C0392B,color:#fff
 ```
+
+</details>
 
 ---
 
